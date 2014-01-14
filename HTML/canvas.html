@@ -1,0 +1,93 @@
+<!doctype html>
+<html>
+<head>
+   <!--
+      Canvas is not supported in IE8
+   -->
+   
+  <meta charset="utf-8">
+  <title>canvas</title>
+  <style>
+      canvas { border: 1px solid red; }
+  </style>
+  <script>
+   
+   var CANVAS = { };
+   
+   window.onload = function() {
+
+      CANVAS["canvas1"] = document.getElementById("canvas1");
+      CANVAS["canvas1_context"] = CANVAS["canvas1"].getContext("2d");
+      
+      draw_shape();
+      var btn = document.getElementById("draw");
+      btn.onclick = draw_canvas;
+   }
+   
+   function draw_shape() {
+      
+      var context = CANVAS["canvas1_context"];
+      if (context) {
+         // x, y, width, height
+         context.fillRect(10,10,100,100);
+      }
+   }
+   
+   function clear_canvas1() {
+      var context = CANVAS["canvas1_context"];
+      
+   }
+   
+   function draw_canvas() {
+      var canvas = document.getElementById("canvas1");
+      var context = canvas.getContext("2d");
+      
+      var color_obj = document.getElementById("select_color");
+      var color = color_obj[color_obj.selectedIndex].value;
+      var shape_obj = document.getElementById("select_shape");
+      var shape = shape_obj[shape_obj.selectedIndex].value;
+      
+      if (shape == "square") {
+         draw_squares(color,canvas,context);
+      }
+   }
+   
+   function draw_squares(color, canvas, context) {
+      // [0 - 1)
+      var width = Math.floor(Math.random() * 40);
+      var x = Math.floor(Math.random() * canvas.width);
+      var y = Math.floor(Math.random() * canvas.height);
+      context.fillStyle = color;
+      context.fillRect(x,y,width,width);
+   }
+   
+  </script>
+</head>
+<body>
+   <!-- Using width/height in CSS will scale the canvas.  To set actual pixels, use width/height here -->
+   <canvas id="canvas1" width="600" height="200">Print me if canvas is not supported</canvas>
+   
+   <form>
+      <p>
+         <label for="color">Color:</label>
+         <select id="select_color">
+            <option value="red" selected="selected">Red</option>
+            <option value="blue">Blue</option>
+       </select>
+      </p><p>
+         <label for="random_shape">Random shape:</label>
+         <select id="select_shape">
+            <option value="square" selected="selected">Square</option>
+            <option value="circle">Circle</option>
+         </select>
+      </p>
+      <p>
+         <input type="button" id="draw" value="draw">
+      </p>
+      <p>
+         <input type="button" id="clear" value="clear">
+      </p>
+   </form>
+   
+</body>
+</html>

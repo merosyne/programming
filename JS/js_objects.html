@@ -1,0 +1,239 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title> JS Objects </title>
+<script src="assert.js"></script>
+<script src="js_core_additions.js"></script>
+<link rel="stylesheet" href="assert.css">
+
+<!--
+   Javascript is a prototypal language
+   
+   A function constructor has a hidden prototype property (the constructor only, not the object it returns).  In fact,
+   all functions have a hidden prototype property.
+   
+     this.prototype = { constructor: this; }  
+     
+   - The constructor property is not useful.  The prototype property is where inherited traits are kept.   
+   
+   This is what the new does:
+
+   - Create a new object that inherits from the constructor's prototype
+   var that = Object.create(the_constructor.prototype);
+      
+    - Invoke the constructor, binding 'this' to the new object.
+   var other = the_constructor.apply(that, arguments);
+      
+    - Return the new object
+    return (typeof other == 'object' && other) || that;
+-->
+
+<script>
+
+window.onload = function() {
+
+   // The true prototype of an object is held by the internal [[Prototype]] property. 
+   // ECMA 5 introduces the standard accessor Object.getPrototypeOf(object) which to-date is implemented in 
+   // Firefox, Safari, Chrome and IE9. In addition all browsers except IE support the non-standard accessor __proto__
+   //
+   // A function's prototype property is not its prototype
+   var a = {};
+   test_label("This object's prototype should be Object");
+   test_out(Object.getPrototypeOf(a) + "<br>");
+   // Fails in IE.
+   test_out(a.__proto__ + "<br>");
+   test_out(a.constructor.prototype);
+   
+   // This is not cross browser (fails in IE), so Object.create is preferred.
+   var base = {
+      'property1' : 'value1',
+      'property2' : 'value2'
+    };
+   var base_with_additions = {};
+   base_with_additions.__proto__ = base;
+   base_with_additions["property3"] = "value3";
+   assert("Assign prototype: this will fail in IE",base_with_additions.property1 == "value1"); 
+   assert("assign prototype",base_with_additions.property3 == "value3");
+   assert("assign prototype",base.property3 == undefined);
+   
+   // Using Object.prototype.toString to return the object class:
+   // - All native objects in JavaScript contain an internal property called [[Class]]
+   //  - This property contains a string value that represents the specification defined classification of an object
+   //  - The possible values for native objects are: "Object", "Array", "Function", "Date", "RegExp",
+   //    "String", "Number",  "Boolean", 
+   //    - "Error" for error objects such as instances of ReferenceError, TypeError, SyntaxError, Error, etc
+   //    - "Math" for the global Math object
+   //    - "JSON" for the global JSON object defined on the ECMAScript 5th Ed. spec.
+   //    - "Arguments" for the arguments object (also introduced on the ES5 spec.)
+   //    - "null" (introduced just a couple of days ago in the ES5 errata)
+   //    - "undefined"
+   var x = new Number(1);
+   alert(Object.prototype.toString.apply(x));
+   
+   // See JS_OBJECT_LITERALS.HTML for objects made with Object.create.  These objects do not have a
+   // prototype property to which methods can be assigned, and cannot use Function.method.
+
+   // Objects made via constructor functions have a prototype property.
+   
+   // A constructor function.  MyObj.prototype will contain the inherited traits.
+   var MyObj = function() {
+      this.myvar = 10;
+      // Have to use 'this' to reference myvar.
+      this.local_get_myvar = function() { return this.myvar; }
+   }
+   var obj = new MyObj;
+   
+   // Could also have done: MyObj.prototype.get_myvar = function() { ...}
+   MyObj.method("get_myvar",function() { return this.myvar; });
+   assert("Using Function.method to add an inherited method to a constructor object",obj.get_myvar() == 10);
+ 
+   // Using a closure to protect data.  The general pattern is to define data, create a function/object
+   // to do the work, then return the function/object.  
+   var myObj = ( function() {
+      var myval = 0;
+      return {
+         increment : function() {
+            myval++;
+            return myval;
+         }
+      };
+   }());  
+   myObj.increment();
+   var val = myObj.increment();
+   assert("Closure variables persist", val == 2);
+   assert("Closure protects access to data", typeof myObj.myval == "undefined");
+   
+   // Unlike the first example, which makes a single object by auto-invoking the
+   // enclosing function, this is a creation function for multiple objects.
+   var secure_object = function( startval ) {
+      var data = startval;
+      return {
+         increment : function() {
+            data++;
+            return data;
+         }
+      };
+   };
+   var obj = secure_object(10);
+   var val = obj.increment();
+   assert("Module methods can access hidden data", val == 11);
+   
+   //===
+   // Inheritance : class
+   //===
+   
+   var MyBase = function() {
+      this.name = 'base';
+   }
+   MyBase.method('return_name',function() { return this.name; });
+   
+   var MyDerived = function() {
+      this.name = 'derived';
+   }
+   MyDerived.prototype = new MyBase();
+   
+   obj = new MyDerived();
+   assert("Derived class name takes precedence",obj.name);
+   assert("Derived class objects can call base class method, and 'this' inside base class method is bound to derived class object",
+      obj.return_name() === "derived");
+
+   // Using both 'inherits' and 'method'
+   var DerivedTwo = function() {
+      this.name = "two";
+   }.inherits(MyBase) 
+    .method('new_method', function() { return "hi" });
+   
+   obj = new DerivedTwo();
+   assert("Using inherits: name is derived class ", obj.name == "two");
+   assert("Using inherits: base class method can be called", obj.return_name() == "two");
+   assert("Chaining inherits and method is ok", obj.new_method() == "hi");
+    
+   //===
+   // Inheritance: prototypal (differential) - customize a new object by specifying the differences
+   // from the object it was derived from.
+   //===
+   
+   var base_object = new MyBase;
+   var my_derived = Object.create( base_object );
+   my_derived.name = 'hello!'
+   assert("Prototypal inheritance: base class methods refer to derived 'this'", my_derived.return_name() === "hello!");
+   
+   //=== 
+   // Privacy
+   //===
+   
+   // Sadly, with this type of functional inheritance, new copies of each method are
+   // made per object. This does cause a performance hit:
+   // - http://jsperf.com/prototypes-vs-functions/4
+   
+   var genobj = function(spec, my) {
+   
+      spec = spec || {};
+      my = my || {};
+      
+      spec.name = spec.name || "default";
+      
+      // Other methods should call my_method() rather than that.my_method() if
+      // they want to ensure they get the original my_method() rather than any
+      // later override.
+      var get_name = function() { return spec.name };
+      
+      that = {};
+      that.get_name = get_name;
+      
+      return that;
+   }
+   
+   var p = genobj();
+   assert("Using private data", p.get_name() == "default");
+   var q = genobj( { name : 'hello!' });
+   assert("Passing in spec",  q.get_name() == "hello!");
+   
+   var derobj = function(spec, my) {
+      spec = spec || {};
+      spec.name = 'derived obj';
+      var that = genobj(spec, my);
+      var super_get_name = that.superior("get_name");
+      that.get_name = function() { return "override: " + spec.name };
+      return that;
+   }
+   
+   var d = derobj();
+   assert("Derived obj: ", d.get_name() == "override: derived obj");
+
+   // Methods
+   var MyC = function() {
+      this.name = "name defined in constructor";
+      this.many_copies = function(p) {
+         this.many_copies_str = p;
+      }
+   }
+   var myc = new MyC;
+   console.log(myc.name);
+   
+   myc.many_copies("method defined inside constructor");
+   console.log(myc.many_copies_str);
+   
+   MyC.prototype.one_copy = function(p) {
+      this.one_copy_str = p;
+   }
+   myc.one_copy("method defined via prototype after object is constructed");
+   console.log(myc.one_copy_str);
+   
+   MyC.weird = function() {
+      return "hi";
+   }
+   assert("Function defined directly on base class, not on prototype, is not inherited", myc.weird === undefined);
+   assert("Calling such a function",MyC.weird() == "hi");
+}
+
+</script>
+
+</head>
+<body>
+<div id="out"></div>
+</body>
+</html>
+
+

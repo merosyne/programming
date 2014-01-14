@@ -1,0 +1,8 @@
+
+# - Enables strict and warnings
+# - Enables perl 5.10 features
+# - Loads IO::File and IO::Handle
+use Modern::Perl 2011;
+use autodie;
+
+say "hi!";

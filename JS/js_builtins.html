@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title> JS Builtins </title>
+<script src="assert.js"></script>
+<script src="js_core_additions.js"></script>
+<link rel="stylesheet" href="assert.css">
+
+<!-- 
+
+Target ECMAScript additions (2009... earliest adoption approx 2011 
+   Object.create
+   Object.defineProperty, Object.defineProperties
+   Object.getPropertyOf
+   Object.keys
+   Object.seal, Object.isSealed
+   Object.freeze, Object.isFrozen
+   Object.preventExtensions, Object.isExtensible
+   Object.getOwnPropertyDescriptor
+   Object.getOwnPropertyNames
+
+   Date.prototype.toISOString
+   Date.new
+   Array.isArray [ core addition: is_array ]
+   JSON [See JSON2.JS for earlier implementation ]
+   Function.prototype.bind
+   String.prototype.trim [ core addition ]
+
+   Array.prototype: indexOf, lastIndexOf, every, some, forEach, map, filter, reduce, reduceRight
+
+   Getter in property initializer
+   Setter in property initializer
+   Property access on strings (eg "foobar"[3] === "b") 
+   Reserved words can be used as property names
+
+   Zero width chars in identifiers
+   Immutable undefined
+   Strict mode.
+
+ECMAScript 5: 2009 : http://kangax.github.io/es5-compat-table/
+   - In brief: 
+     - IE9 Most [ Mar 2011 ]
+       - no "strict mode"
+       - No zero width chars in identifiers
+     - IE10+ All [ Oct 2012 ]
+     - Firefox 4+ All [ March 2011 ]
+     - Safari 5.1 Most [July 2011 ]
+       - No function.prototype.bind
+       - No zero-width chars in identifiers
+     - Safari 6 All [ June 2012 ]
+     - Chrome 13-16 Most {Aug 2011 ]
+       - No: zero-width chars in identifiers (??)
+       - No: Immutable undefined
+     - Chrome 19+ All [ May 2012 ]
+     - Opera 12 Most [ June 2012 ]
+       - No zero-width chars in identifiers
+     - Opera 12.10+ All 
+     - Webkit all [Safari, and Chrome to version 27]
+   - IE8 does not support most of the new ECMAScript 5 functionality
+   - Opera 13+ will use the same fork of WebKit that Chrome uses.
+-->
+   
+ <!--
+   Javascript numbers are 64 bit : http://ecma262-5.com/ELS5_HTML.htm#Section_8.5
+   - IEEE-754 compliant floating-point doubles. These have a 53-bit mantissa.
+   - Special Values: NaN, Infinity, -Infinity
+   
+   Javascript has only 6 language types: Object, String, Number, Boolean, Null and Undefined.
+   
+   Comparisons:
+   - The == and != operators do type coercion before comparing.  This will cause errors such as ("\t" == 0) evaluating to true.
+   
+   use strict
+   - A feature of ECMAScript 5
+   - Prevents:
+     - Assignments to undeclared variables
+     - Defining a property more than once in an object literal
+     - Use of the reserved word 'eval'
+     - Using an eval statement to define a new variable
+     - Overwriting the arguments array
+     - Defining 2 function parameters with the same names.
+     - Prevents with(){} statements
+     
+   JSLINT: In general, select:
+     - Assume browser
+     - Assume console
+     - Indentation = 3
+     - Assume many var statements per function
+     - Assume messy white space
+-->
+<script>
+
+// This can be done inside a function.
+// JSLint bitches about the global use of use strict.
+"use strict";
+
+// Allow ++ and --, even though D. Crockford doesn't like them.
+/*jslint plusplus: true */
+
+// Declare globals brought in from other javascript files for JSLINT
+/*global is_array*/
+
+// Container object for global variables.
+var TESTJS = {
+   I_AM_A_GLOBAL : 1
+};
+
+function test_date() {
+
+   // ISO formatted date support is ECMAScript 5 - 2009
+    var date = new Date("2009-05-21T16:06:05.000Z");    
+    // Prints 2009-05-21T16:06:05.000Z
+    console.log( "ISO formatted date: " + date.toISOString() );
+}
+
+function test_string() {
+   var str = "abc   ";
+   assert("String trim: ECMAScript 5 only", str.trim() === "abc");
+   
+   // Remove all zero width chars:
+   // - The zero-width space (ZWSP) is a non-printing character used in computerized typesetting to indicate word boundaries 
+   //   to text processing systems when using scripts that do not use explicit spacing
+   var userInput = 'a\u200Bb\u200Cc\u200Dd\uFEFFe';
+   var result = userInput.replace(/[\u200B-\u200D\uFEFF]/g, '');
+}
+
+// Apparently Crockford's json2.js is compatible with ECMAScript 5 and degrades to using native if available.
+// - There are ways to JSONify only particular fields, apply translations, etc.
+// - String, Boolean, Number, and Date have "toJSON" methods.
+function test_json() {
+   // All ECMAScript 5 (2009)
+   var obj = JSON.parse('{"name":"John"}');
+   console.log("JSON parsed string: " + obj.name);
+   var str = JSON.stringify(obj);
+   console.log("JSON parsed object: " + str);
+}
+
+function test_number() {
+   console.log("MAX_VALUE: " + Number.MAX_VALUE);
+   console.log("MIN_VALUE: " + Number.MIN_VALUE);
+}
+
+function test_objects() {
+   
+   var obj = {
+      name : 'proto_obj',
+      my_var : 1,
+      mtd : function () { this.my_var++; }
+   };
+   var name;
+   
+   // The JSLINT standard way to get an object's properties.
+   for (name in obj) {
+      if (obj.hasOwnProperty(name)) {
+         console.log("obj has own property: " + name);
+      }
+   }
+}
+
+// Methods that work with regular expressions:
+//   regexp.exec
+//   regexp.test - returns true/false
+//   string.match
+//   string.replace
+//   string.search
+//   string.split
+//
+// Note: 
+// - (?:...) is a non capturing group
+// - \b uses \w to find word boundaries, so is not useful for multilingual applications.
+// - (?=...) positive lookahead
+// - (?!...) negative lookahead
+function test_re() {
+
+   var re_literal = /^\s*$/g;
+   var re_constructor = new RegExp( "'^\\s*$'", "g" );
+}
+
+function test_array() {
+   // Javascript arrays convert subscripts into properties. Significantly slower than a real array. 
+   var numbers = [ "one", "two", "three" ];
+   assert("Uninitialized array elements return undefined",numbers[4] === undefined);
+   
+   // Length is the largest integer property + 1, not the number of properties in the array.
+   // You can make the length smaller, which will delete numeric subscripts >= the length.
+   assert("Arrays have a length", numbers.length === 3);
+  
+   // Delete replaces with undefined. Does not change length field.  Generally use splice instead, but
+   // splice may be slow for large arrays.
+   //delete numbers[1];
+   var ord = 1;
+   var num_to_delete = 1;
+   numbers.splice(ord,num_to_delete,"insert_me");
+   
+   // for (x in numbers) will also return methods... its also not guaranteed to be in order.
+   var i;
+   for (i = 0; i < numbers.length; i++) {
+      console.log("Numbers: " + i + " " + numbers[i]);
+   }
+   assert("Core library addition: is_array", is_array(numbers));
+   
+   // As of ECMAScript 5, there is finally an isArray
+   assert("Native ECMAScript 5 IsArray", Array.isArray(numbers));
+   
+   // As of ECMAScript 5, the following are "officially" part of the array specification
+   // - indexOf, lastIndexOf, every, some, forEach, map, filter, reduce, reduceRight
+   
+   var matrix = [
+      [ 1, 2, 3 ],
+      [ 4, 5, 6 ],
+      [ 7, 8, 9 ] ];
+   assert("Matrix in javascript",matrix[1][1] === 5 );
+ }
+ 
+ // JSLINT complains if there is not a space between function and (), and between () and {.
+window.onload = function () {
+   test_number();
+   test_date();
+   test_string();
+   test_array();
+   test_objects();
+   test_json();
+   test_re();
+}
+
+</script>
+</head>
+<body>
+<div id="out"></div>
+
+<!--
+https://developers.google.com/chrome-developer-tools/
+In IE: hit F12 for developer tools
+In firefox, use firebug
+-->
+<script>
+console.log("Hello!");
+</script>
+
+</body>
+</html>

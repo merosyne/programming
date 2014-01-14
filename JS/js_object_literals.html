@@ -1,0 +1,110 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title> JS Object Literals </title>
+
+<!--
+XHTML DTD:
+
+Given an empty instance of an element whose content model is not EMPTY (for example, an empty title or paragraph) 
+do not use the minimized form (e.g. use <p> </p> and not <p />).
+-->
+
+<script src="js_core_additions.js"></script>
+<script src="assert.js"></script>
+<link rel="stylesheet" href="assert.css">
+
+<!--
+Javascript's integer type is a 64 bit floating point.
+
+Integer special values:
+- Infinity
+- NaN
+
+Characters in a string are 16 bit.
+Strings are immutable.
+
+A block in JavaScript does not create a new scope.
+Objects are passed by reference.
+
+-->
+<!-- Tests -->
+<script>
+
+// Container object for global variables.
+var TESTJS = {
+   I_AM_A_GLOBAL : 1
+};
+
+window.onload = function() {
+   fun_with_obj_literals();
+}
+
+function fun_with_obj_literals() {
+
+   test_label("Object Literals");
+   var my_obj = {
+      string_param : "val",
+      numeric_param : 1,
+      nested_object : {
+         string_param : "nested",
+         unique_nested_param : 2
+      }
+   };
+
+   assert("Access object literal param using .", my_obj.string_param == "val");
+   assert("Access inner object using .", my_obj.nested_object.unique_nested_param == 2);
+   
+   // Had to use quotes here.
+   assert("Access object literal param using []",my_obj["nested_object"]["string_param"] == "nested");
+   
+   // Objects are passed and assigned by reference.
+   var obj_reference = my_obj;
+   obj_reference.numeric_param += 10;
+   assert("Objects are passed by reference",my_obj.numeric_param == 11);
+   
+   // Object prototypes.
+   // - Sadly, IE8 does not support Object.create
+   // - These objects do not have accessible prototype properties although they do have an
+   //   internal Prototype property (sometimes available via the __proto__ property).
+   var proto_obj = {
+      name : "proto",
+      proto_only : "proto_only"
+   };
+   var new_obj = Object.create(proto_obj);
+   test_out("Prototype of object created with Object.create: " + Object.getPrototypeOf(new_obj) + "<br>");
+   assert("Prototype of object created with Object.create is the argument: ",Object.getPrototypeOf(new_obj) === proto_obj);
+   
+   new_obj["new_param"] = "new"
+   assert("Can access prototype object properties",new_obj.name == "proto");
+   new_obj.name = "not the proto";
+   assert("Cannot change prototype object properties",new_obj.name == "not the proto" && proto_obj.name == "proto");
+   
+   proto_obj["everyone_gets_me"] = "boo";
+   assert("New prototype properties are immediately available",new_obj.everyone_gets_me == "boo");
+   
+   // Reflection
+   assert("We can check for properties using typeof",typeof new_obj.proto_only == "string");
+   assert("We can restrict our check to the current object",new_obj.hasOwnProperty("proto_only") == false);
+   
+   // Proto value should be visible again.
+   delete new_obj.name;
+   
+   // Interesting: document.writeln removes all existing HTML.
+   test_out("<br><div>&nbsp;&nbsp;Test object has the following properties:</div>");
+   for (var name in new_obj) {
+      test_out("<div>&nbsp;&nbsp;&nbsp;&nbsp;" +name + " : " + new_obj[name] + "</div>");
+   }
+   test_out("<br>");
+   
+   assert("Using a container object for globals",TESTJS.I_AM_A_GLOBAL == 1);
+}
+
+</script>
+
+</head>
+<body>
+<div id="out"></div>
+</body>
+</html>

@@ -1,0 +1,115 @@
+<!doctype html>
+<html>
+
+<head>
+<meta charset="utf-8">
+<title>HTTPRequest</title>
+
+<style type="text/css">
+   div.results_class { 
+      border: 1px solid black;
+   }
+</style>
+
+<!--
+  XMLHttpRequest level 2 is the latest.  The 'onload' property is not supported by older browsers (IE8, Opera 10)
+  
+  Cannot access data from other domains.
+-->
+
+<script>
+
+function get_all() {
+   var url = "http://localhost/test/http_request_data.json";
+   
+   // Below didn't work in XMLHttpRequest.  It does work with the JSONP script load in handle_refresh.
+   // + "&random=" + (new Date()).getTime();
+   
+   alert("my url is: " + url);
+   get_data_level2(url);
+   get_data_level1(url);
+   handle_refresh(); // We could call this continually with setInterval(handle_refresh, 3000) <-- milliseconds
+}
+
+function get_data_level2(url) {
+   var request = new XMLHttpRequest();
+   request.open("GET",url);
+   request.onload = function() {
+      if (request.status == 200) {
+         var results = document.getElementById("results");
+         results.innerHTML = format_data(request.responseText);
+      }
+   }
+   request.send(null);
+}
+
+// XMLHttpRequest Level 1
+function get_data_level1(url) {
+   var request = new XMLHttpRequest();
+   request.onreadystatechange = function() {
+      if (request.readyState == 4 && request.status == 200) {
+         var results = document.getElementById("duplicate_results");
+         results.innerHTML = format_data(request.responseText);
+      }
+   };
+   request.open("GET",url);
+   request.send(null);   
+}
+
+function format_data( data, noparse ) {
+   var arr;
+   if (noparse) {
+      arr = data;
+   } else {
+      arr = JSON.parse(data);
+   }
+   
+   // Don't += to an empty string, display will contain "undefined" at the start.
+   var display_str = "";
+   for (var i = 0; i < arr.length; i++) {
+      var item = arr[i];
+      display_str += "<div> Item name: " + item["name"] + ": " + item.field1 + "</div>"; 
+   }
+   // Unlike ruby and perl, 'return' is required.
+   return display_str;
+}
+
+function handle_refresh(url) {
+   var url = "http://localhost/test/http_request_data_callback.json";
+   var new_script = document.createElement("script");
+   new_script.setAttribute("src",url);
+   new_script.setAttribute("id","jsonp");
+   
+   var old_script = document.getElementById("jsonp");
+   var head = document.getElementsByTagName("head")[0];
+   if (old_script == null) {
+      head.appendChild(new_script);
+   } else {
+      head.replaceChild(new_script,old_script);
+   }
+}
+
+function do_callback(data) {
+   var results = document.getElementById("refresh_results");
+   // The object is already parsed this time, we aren't just reading in a string.
+   results.innerHTML = format_data(data,true);
+}
+
+window.onload = get_all;
+
+</script>
+
+</head>
+<body>
+
+<h1> Http Request </h1>
+<h2> Using XMLHttpRequest Level 2 </h2>
+<div id="results" class="results_class">
+</div>
+<h2> Using XMLHttpRequest Level 1 </h2>
+<div id="duplicate_results" class="results_class">
+</div>
+<h2> Refreshable Results </h2>
+<div id="refresh_results" class="results_class"></div>
+</body>
+</html>

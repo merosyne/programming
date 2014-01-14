@@ -1,0 +1,174 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title> JS Functions </title>
+<script src="assert.js"></script>
+<script src="js_core_additions.js"></script>
+<link rel="stylesheet" href="assert.css">
+
+<!-- 
+- Functions are objects
+- Functions can be defined inside other functions.  An inner function has access to the parameters and variables of the
+  function it is nested within.
+- "return" is required.
+
+- Javascript does not provide tail recursion optimization.
+
+- Adding to Object.prototype makes that method available to all objects.
+- Adding to Function.prototype makes that method available to all functions.
+-->
+
+<script>
+
+function plain_function() {
+   assert("Plain old function: this should be bound to window", this === window);
+   return 1;
+}
+
+window.onload = function() {
+
+   //===
+   // function invocation
+   //===
+   
+   // All functions receive an implicit 'this' parameter.  What 'this' is depends on the invocation
+   // pattern used.
+   
+   // Method invocation pattern: The function is stored as a property of an object.  'this' will
+   // be bound to the object.
+   var test_object = {
+      myvar : 13,
+      runme : function() { 
+         // Have to use "this.myvar"
+         assert("Method: this is bound to the object", this.myvar == 13);
+      }
+   };
+   test_object.runme();
+   
+   // Function invocation pattern: The function is not the property of an object.  "this" is bound to 
+   // the global object (window).
+   var plain = plain_function();
+   
+   // - Because of this, a method cannot employ an inner function to help it do its work because "this" 
+   //   is not bound to the enclosing object inside the inner function, eg:
+   test_object.outer = function() {
+      // Standard workaround
+      var that = this;
+      var inner = function() {
+         assert("Method: inner function must use a parameter with a copy of this",that.myvar == 13);
+      }();
+   }
+   test_object.outer();
+   
+   // - Calling a method as a regular function, with no object.
+   test_object.whee = function() { 
+      assert("Method called as regular function: this does not point to the current object", typeof myvar == "undefined");
+      assert("Method called as a regular function: this points to the global object", this === window);
+   };  
+   var fun = test_object.whee;
+   fun();   
+  
+   // Constructor invocation pattern:
+   // - If a function is invoked with the 'new' prefix, then a new object will be created with a hidden link to 
+   //   the value of the function's prototype member, and 'this' will be bound to that new object.
+   
+   // Constructor function.
+   var MyObj = function(myvar_val) {
+      // Special handling: 'this' is returned automatically if nothing else is returned.
+      this.myvar = myvar_val;
+      
+   }
+   // Public method.
+   MyObj.prototype.get_myvar = function() { return this.myvar };
+   
+   var mine = new MyObj(14);
+   var count = mine.get_myvar();
+   assert("Constructor invocation pattern", count == 14);
+ 
+   // Apply invocation pattern
+   // - construct an array of arguments to call the function with, and explicitly set 'this'.
+   function add_to_myvar(add_val) {
+      this.myvar += add_val;
+   }   
+   var myvar_obj = {
+      myvar : 10
+   }
+   // Use Function.prototype.apply
+   add_to_myvar.apply(myvar_obj,[5]);
+   assert("Apply can set 'this'",myvar_obj.myvar == 15);
+   
+   //===
+   // Exceptions
+   //===
+   
+   function throw_something() {
+      throw {
+         name: "MyError",
+         message: "My message"
+      };
+   }
+   var exception_test = function() {
+      try {
+         throw_something();
+      } catch (e) {
+         assert("Exceptions: object members are accessible", e.name == "MyError");
+      }
+   }();
+   
+   //===
+   // Core library additions
+   //===
+   
+   assert("Number.integer",(-10 / 3).integer() == -3);
+   assert("String.trim", "   abc   ".trim() == "abc");
+
+   // Curry
+   function addme(a,b) { return a + b; }
+   var add1 = addme.curry(1);
+   assert("Curry: pre-supply a few arguments to a function, to make a new function", add1(5) == 6);
+   
+   // Memoization: using objects to store the results of previous computations.
+   // - A fibonacci number is the sum of the 2 previous numbers.
+   var fibonacci = memoizer( [0, 1], function(recur, n) {
+         return recur(n - 1) + recur(n - 2);
+      });
+   assert("Memoization: fibonacci", fibonacci(4) == 3 && fibonacci(5) == 5);
+   
+   //===
+   // Arguments array
+   //===
+   
+   // Accessing the arguments array as a true array: hack.
+   var argfun = function( a, b, c ) {
+      var slice = Array.prototype.slice;
+      args = slice.apply(arguments);
+   }
+
+   //===
+   // Bind (ECMAScript 5 - 2009)
+   //===
+   // Bind creates a new function that will have this set to the parameter passed to bind()
+   // - Useful for eg. for using a method as the target of a setTimeout: setTimeout( obj.method.bind(obj, <args> ));
+   var bobj = {
+      name : "bobj",
+      method : function () {
+         console.log("method activated by: " + this.name);
+      }
+   };
+   var bobj2 = { 
+      name : "bobj2"
+   };
+   var bound_method = bobj.method.bind(bobj2);
+   bound_method();
+ 
+   
+}
+
+</script>
+
+</head>
+<body>
+<div id="out"></div>
+</body>
+</html>

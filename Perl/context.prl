@@ -1,0 +1,47 @@
+
+#===
+# Scalar vs list context
+#===
+
+my $scalar_context = return_a_list();
+# Returns "c"
+print "Scalar context, one variable: $scalar_context\n"; 
+
+my ($single_item) = return_a_list();
+# Returns "a"
+print "List context, one variable: $single_item\n";
+
+my ($a, $b, $c) = return_a_list();
+# Returns "a b c"
+print "List context, all variables: $a $b $c\n"; 
+
+my @list = return_a_list();
+print "List context \@list variable:\n";
+foreach my $elem (@list) {
+   print "\t$elem\n";
+}
+
+my %results = (
+   # The first element of the list is assigned, as per my ($single_item)
+   list_context => return_a_list(),
+   scalar_context => scalar return_a_list()
+);
+
+print "List context inside a hash assignment: $results{list_context}\n";
+print "Scalar context for the same: $results{scalar_context}\n";
+
+#===
+# Numeric vs String context
+#===
+print "\n######\n\n";
+
+my $x = "123.4";
+my $numeric_x = 0 + $x;
+print "Coerced numeric: $numeric_x\n";
+
+my $string_x = '' . $x;
+print "Coerced string: $string_x\n";
+
+sub return_a_list {
+   return ("a", "b", "c");
+}

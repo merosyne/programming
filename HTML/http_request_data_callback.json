@@ -1,0 +1,5 @@
+var mydata = [ { "name" : "OBJECT1", "field1" : "value1_obj1", "field2" : "value2_obj1" },
+  { "name" : "OBJECT2", "field1" : "value1_obj2", "field2" : "value2_obj2" },
+  { "name" : "OBJECT3", "field1" : "value1_obj3", "field2" : "value2_obj3" } ];
+  
+do_callback(mydata);

@@ -1,0 +1,9 @@
+use JSON;
+use Data::Dumper;
+
+my $json =  "{\"status\": \"success\", \"redirect_url\":" .
+   " \"http://api-qa.pbslm.org/bypass/login/b84a1d95-1dbd-4350-a33e-16a71d3acc63/?next=%2Fresource%2F053669f3-231f-4df3-ba66-f06f9a519691%2F\"}";
+
+my $obj = decode_json( $json );
+print Dumper($obj);
+print "status: " . $obj->{status} . "\n";
