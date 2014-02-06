@@ -74,6 +74,11 @@ window.onload = function() {
    // See JS_OBJECT_LITERALS.HTML for objects made with Object.create.  These objects do not have a
    // prototype property to which methods can be assigned, and cannot use Function.method.
 
+   var o = {
+      name : "base"
+   };
+   var d = Object.create(o);
+   
    // Objects made via constructor functions have a prototype property.
    
    // A constructor function.  MyObj.prototype will contain the inherited traits.
@@ -172,6 +177,7 @@ window.onload = function() {
       spec = spec || {};
       my = my || {};
       
+      // Yes this is ok, even though spec.name is undefined.
       spec.name = spec.name || "default";
       
       // Other methods should call my_method() rather than that.my_method() if
@@ -195,7 +201,7 @@ window.onload = function() {
       spec.name = 'derived obj';
       var that = genobj(spec, my);
       var super_get_name = that.superior("get_name");
-      that.get_name = function() { return "override: " + spec.name };
+      that.get_name = function() { return "override: " + super_get_name() };
       return that;
    }
    
