@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="utf-8">
+
+   <title>Web Components</title>
+<!-- Should be the first script on the page -->
+<!-- Required for a lot of this stuff to work on IE -->
+<script src="//cdnjs.cloudflare.com/ajax/libs/polymer/0.3.2/platform.js"></script>
+<script src="../js/modernizr.custom.58606.js"></script>   
+
+<!--
+
+   The old fashioned way of doing a template:
+   - Define inside a script, with an unknown type:
+     <script type="text/mytemplate">
+        some html here
+     </script>
+   - This will be ignored and not rendered by the browser.
+   - In JavaScript, read the script's innerHTML property, and do any string
+     replacements required.
+     
+-->
+
+<script>
+   function supportsTemplate() {
+      // Check that the content property exists.  This tells us if the browser
+      // supports templates.
+      return 'content' in document.createElement('template');
+   }
+   
+   // document.addEventListener('DOMContentLoaded',function() { ... }
+   // - Could be used instead, if you don't need to wait for all resources.
+   window.onload = function() {
+      var template = document.querySelector("#test_simple_template");
+      
+      if (supportsTemplate()) {
+         // importNode can import from another document. 
+         // 'true' clones descendents too.
+         var element = template.content.cloneNode(true);
+         //console.log("Template content: " + template.content); // object documentFragment
+         document.body.appendChild(element);
+      } else {
+         // Prevent template code from displaying on browsers that don't support templates.
+         // Not really needed with polymer.js support.
+         template.style.display="none";
+      }
+      
+      // - Data binding is via Object.observe
+      // - The template must contain the "bind" attribute
+      // - If you bind a template to a data model, the template gets instantiated immediately
+      //   following the template declaration.
+      var bound_template = document.querySelector("#bound_template");
+      bound_template.model = {
+         field_object: {
+            field1 : "str1",
+            field2 : "str2"
+         }
+      };
+      
+      // Here is the polyfill for non-supporting browsers.  Call whenever you modify the data model in code.
+      // Platform.performMicrotaskCheckpoint();
+      
+   }
+   // And create a custom element via javascript
+   window.addEventListener('HTMLImportsLoaded',function() {
+      console.log("Creating new custom item via javascript");
+      var new_custom_item = new CustomItem();
+      new_custom_item.textContent = "Created Via JavaScript";
+      document.body.appendChild(new_custom_item);
+   });
+</script>
+
+<!-- There is a polyfill in polymer.js for this -->
+<link id="custom_item_import" rel="import" href="html_import_custom_item.html">
+
+</head>
+<body>
+<h1> Testing Web Components </h1>
+
+<!-- 
+   - Resources for the template are not loaded until the template is used.  Scripts don't run, etc.
+   - Content is not considered to be part of the document (ie. not in the DOM)
+   - Template can be placed in the <head> section.
+-->
+<template id="test_simple_template">
+   <p>Simple Template</p>
+</template>
+
+<!-- Model driven view 
+  - To bind to a model with an array of objects use the repeat="{{}}" attribute instead of "bind".
+-->
+<template id="bound_template" bind>
+   <p>Bound Template top level: <span>{{ field_object.field1 }}</span></p>
+   <input value="{{ field_object.field1 }}"></input><br>
+   
+   <p>Bound Template named component: <span>{{ field_object.field2 }}</span></p>
+   <input value="{{ field_object.field2 }}"></input><br>
+</template>
+
+<form>
+
+<!-- Custom element names must contain a hyphen -->
+<custom-item>Text within custom-item</custom-item>
+
+<p> Simple template should appear somewhere after this line, since we clone it and append it to the document body. </p>
+<hr>
+</form>
+</body>
+</html>

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <meta charset="utf-8">
+   <title>Script Tag Data</title>
+   <script>
+   </script>
+   <!--
+   // These do not work
+   <script id="blah" src="script_tag_data.js" data-name="Old"> getElementById("blah").setAttribute("data-name","New")</script>
+   <script id="blah" src="script_tag_data.js" data-name=my_global_name></script>
+   -->
+      
+   <script>
+   var my_global_name="Dymaxion";
+   document.write("<script src='script_tag_data.js' data-name='"+my_global_name+"'>");
+   document.write("</"+"script>");
+   </script>
+   
+</head>
+<body>
+   <p>Loaded</p>
+</body>
+</html>

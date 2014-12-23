@@ -7,6 +7,18 @@ if (typeof Object.create !== "function") {
    }
 }
 
+Object.prototype.getName = function() { 
+   var funcNameRegex = /function (.{1,})\(/;
+   var results = (funcNameRegex).exec((this).constructor.toString());
+   return (results && results.length > 1) ? results[1] : "";
+};
+
+Object.prototype.getName = function() { 
+   var funcNameRegex = /function (.{1,})\(/;
+   var results = (funcNameRegex).exec((this).constructor.toString());
+   return (results && results.length > 1) ? results[1] : "";
+};
+
 // Example:
 //    MyConstructor.method("some_method_name", function() { ... });
 //

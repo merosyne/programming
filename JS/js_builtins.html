@@ -173,8 +173,81 @@ function test_objects() {
 // - (?!...) negative lookahead
 function test_re() {
 
-   var re_literal = /^\s*$/g;
-   var re_constructor = new RegExp( "'^\\s*$'", "g" );
+   console.log("Testing regular expressions");
+   var re_literal = /^\s*s$/g;
+   var re_constructor = new RegExp( "^\\s*abcde$", "" );
+   
+   // true/false
+   assert("Testing regular expression via literal: ", re_literal.test("s") == true);
+   assert("Testing regular expression 'test' method: ", re_constructor.test("abcde") == true);
+ 
+   // This is the same as match if 'g' is not specified. 
+   // array: full match, parentheses matches
+   // - and it has properties: input (entire searched string), index (of match), lastindex (first position following match)
+   // returns null if no match
+   // Use in a loop for successive matches
+   var arr = /^s(o)me.*/.exec("some string");
+   assert("Test exec: ", arr[0] == "some string" && arr[1] == "o");
+  
+   // returns null if no match
+   // Unlike 'exec', returns all matches rather than just first match found.
+   var str = "Some String";
+   arr = str.match(/^s(o)me.*/i);
+   assert("Test str.match: ", arr[0] == "Some String" && arr[1] == "o");
+   
+   // Using a variable inside a regular expression.
+   var str = "abcde";
+   var re = new RegExp(str,"i");
+   assert("Test using a variable inside a regular expression: ", re.test("abcde") == true);
+   
+}
+
+function test_comparisons() {
+   var t;
+   // http://www.ecma-international.org/ecma-262/5.1/#sec-11.9.3
+   
+   assert("var t == undefined", t == undefined);
+   assert("var t == null", t == null);
+   assert("var t != empty", t != "");
+   assert("var t != false", t != false);
+   
+   // Should not be able to use as a boolean condition.
+   if (!t) {
+      assert("undefined can be used as a boolean condition", true);
+   } else {
+      assert("undefined cannot be used as a boolean condition",false);
+   }
+   
+   assert("var t === undefined",t === undefined);
+   assert("var t !== null",t !== null);
+   
+   t = null;
+   assert("null == undefined", t == undefined);
+   assert("null == null", t == null);
+   assert("null != empty", t != "");
+   assert("null != false", t != false);
+   
+   assert("null === null", t === null);
+   assert("null !== undefined", t !== undefined);
+   
+   // Should not be able to use as a boolean condition.
+   if (!t) {
+      assert("null can be used as a boolean condition", true);
+   } else {
+      assert("null cannot be used as a boolean condition",false);
+   }
+  
+   t = "";
+   if (!t) {
+      assert("The empty string can be used as a boolean condition", true);
+   } else {
+      assert("The empty string cannot be used as a boolean condition",false);
+   }
+   assert("The empty string != undefined", t != undefined);
+   assert("The empty string != null", t != null);
+   assert("The empty string == empty", t == "");
+   assert("The empty string == false", t == false);
+     
 }
 
 function test_array() {
@@ -211,6 +284,16 @@ function test_array() {
       [ 4, 5, 6 ],
       [ 7, 8, 9 ] ];
    assert("Matrix in javascript",matrix[1][1] === 5 );
+   
+   
+   // push
+   var parr = [];
+   parr.push("str1");
+   assert("array length after push of a string",parr.length == 1);
+ }
+ 
+ function random_key() {
+   return (new Date).valueOf() + "_" + Math.floor(Math.random() * 1000000);
  }
  
  // JSLINT complains if there is not a space between function and (), and between () and {.
@@ -222,6 +305,7 @@ window.onload = function () {
    test_objects();
    test_json();
    test_re();
+   test_comparisons();
 }
 
 </script>

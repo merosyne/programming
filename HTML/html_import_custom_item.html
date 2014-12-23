@@ -1,0 +1,56 @@
+<template id="tcustom">
+<p>Custom <span>original</span></p>
+</template>
+
+<script>
+   var custom_proto = Object.create(HTMLElement.prototype);
+   custom_proto.createdCallback = function() {
+      console.log("Triggered callback on custom-item");
+      
+      // This is the custom item <link> tag from the calling document.  
+      var link = document.querySelector("#custom_item_import");
+      
+      // link.__resource contains the HTML
+      // - Although I've seen examples, I can't make link.__resource.querySelector() work,
+      // link.import contains the DOM for the HTML (HTMLDocument)
+      
+      //var allitems;
+      //for (var item in link) {
+      //   if (link.hasOwnProperty(item) && !/^on/i.test(item)) {            
+      //      allitems += "\n " + item;
+      //   }
+     // }
+      
+      // Make the new object from a template
+      // - We'd use 'document' rather than 'link.import' if defined in the same file as its used.   
+      var template = link.import.querySelector("#tcustom");  
+      
+      var customItem = template.content.cloneNode(true);
+      var content_span = customItem.querySelector("span");
+      content_span.textContent = this.textContent;
+          
+      // Have to do this, or the text within custom-item will also show up.
+      // NOTE: if we are creating the element from javascript, there will be no firstChild.
+      if (this.firstChild) {
+         this.removeChild(this.firstChild);
+      }
+     
+      // Forward the textContent value of custom-item to its interior span element, if
+      // set via script.
+      Object.defineProperty(this,'textContent', {
+         set: function(inValue) {
+            content_span.textContent = inValue;
+         }
+      });
+      
+      // The interior of the custom item gets its own DOM.
+      var shadow = this.createShadowRoot();
+      shadow.appendChild(customItem);
+      // If we weren't using a shadow DOM we'd do this:
+      // this.appendChild(customItem);
+   };
+   
+   // Registers custom-item with the browser.
+   CustomItem = document.register("custom-item", { prototype: custom_proto });
+  
+</script>

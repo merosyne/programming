@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <meta charset="utf-8">   
+   <title>Simple DOM</title>
+
+   <!-- 
+      Navigation:
+      - elem.parentNode
+      
+      Actions:
+      - appendChild
+      - removeChild
+   -->
+   
+   <script>
+      // document.addEventListener('DOMContentLoaded',function() { ... }
+      // - Could be used instead, if you don't need to wait for all resources.
+      window.onload = function() {
+      
+         //===
+         // Creating Elements
+         //=== 
+         var c = document.getElementById("content_div");
+         var para = document.createElement("p");
+         var para2 = document.createElement("p");
+         
+         var t = document.createTextNode("Paragraph created via appended text node.");
+         para.appendChild(t);
+         para2.innerHTML = "Paragraph created via innerHTML";
+         
+         c.appendChild(para);
+         c.appendChild(para2);
+         
+         //===
+         // Finding Elements
+         //
+         // Returns an HTMLCollection
+         // Not supported in IE 8-
+         var tarr = document.getElementsByClassName("tclass");
+         console.log("Paragraphs found with class tclass: " + tarr.length);
+         var i;
+         for (i = 0; i < tarr.length; i++)  {
+            // Can't use [] with item.
+            var it = tarr.item(i);
+            xinspect(it);
+            // Oddly, .value won't give the paragraph text.
+            console.log("Paragraph matching class tclass: " + it.innerHTML);
+         }
+         
+         // W3C Selectors API
+         // IE8 and above.
+         // Scoping rules differ slightly from expected: http://jsfiddle.net/QdMc5/
+         // querySelector returns the first matched element, querySelectorAll returns all the matches.
+         var mydiv = document.querySelector("#mydiv");
+         // alistapart.com: innerHTML is not implemented on TBODY elements with Internet Explorer (is this fixed?)
+         console.log("Queried via querySelector: innerHTML" + mydiv.innerHTML);
+         console.log("...and innerText: " + mydiv.innerText);
+         // textContent property is IE9+
+         console.log("...and textContent: " + mydiv.textContent);
+         
+         //===
+         // Onmouseover event 
+         //===
+         var btn = document.getElementById("a_button_id");
+         btn.onmouseover = function() { 
+            //alert("mouseover event");
+         }
+         
+         //===
+         // Using an event object
+         //===
+         var clicky_div = document.getElementById("text_block");
+         // e.target is what triggers the event dispatcher
+         // e.currentTarget is the object listening for the event.  DOM level 3: IE 9+.
+         // For equivalent functionality in IE 8, specify 'this' to the event handler:
+         //   <button id="target" onclick="myHandler(event, this);">...</button>
+         //   ...
+         //   function myHandler(e, elem) { alert(elem.id); } 
+         
+         clicky_div.onclick =  function(e) {
+            // e.target is the element that triggered the event.
+            var key = e.target.id;
+            alert("e.target: " + key);
+            var target_tag = e.target.tagName.toLowerCase();
+            if (target_tag == "span") {
+               key = e.target.parentNode.id;
+            }
+            alert("e.currentTarget: " + e.currentTarget.id);
+         }
+      }
+      
+      window.onresize = function () {
+         // resizeCanvasToWindow()
+      }
+      
+      function xinspect (obj) {
+         if (typeof obj == "object") {
+            console.log ("inspecting object");
+            for (var p in obj) {
+               console.log("\t" + p + " => " + obj.p);
+            }
+         }
+      }
+      
+   </script>
+
+</head>
+<body>
+   <div id="content_div">
+   </div>
+   
+   <!-- Colors: http://www.w3schools.com/tags/ref_colornames.asp -->
+   <div id="text_block" style="width:400px; height:50px;  background-color:LightGoldenRodYellow">
+   <span style="width:400px; height:50px;" id="inner_text_block">This is some text to click on</span>
+   </div>
+   
+   <form id="some_form_or_another">
+   <input type="submit" name="a_button" id="a_button_id" value="a_button_value">
+   </form>
+   
+   <p class="tclass">test get elements by class 1</p>
+   <p class="tclass">test get elements by class 2</p>
+   
+   <div id="mydiv"><p>Text inside mydiv</p></div>
+</body>
+</html>

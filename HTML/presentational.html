@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <meta charset="utf-8">
+   <title>Basics</title>
+</head>
+<body>
+
+<!--
+  Elements removed from the language:
+  - frame, frameset, noframes
+  - acronym, applet, basefont, big , blink, center , dir, font, isindex, strike , tt and u
+  
+  Table attribues have been removed from the language:
+  - align, bgcolor, border, cellpadding, cellspacing, height, nowrap, rules, valign, width
+-->
+
+<!-- Ensure these elements work properly in older browsers,  HTML5 shiv handles this in IE8.  HTML5 shiv is 
+     now part of modernizr. -->
+<style type="text/css">
+header, section, footer, aside, nav, main, article, figure
+{ 
+   display: block; 
+}
+</style>
+
+<nav>
+<a href="http://www.cnn.com">news1</a>
+<a href="http://www.wral.com">news2</a>
+</nav>
+
+<header>
+   <h1>I am the header of the document</h1>
+   <!-- 24 hour time or date. Use datetime attribute if you don't want to display the time. -->
+   <p><time pubdate datetime="2011-03-15"></time></p>
+   <p>Should be used for introductory content for a document or section or article.  Frequently only a header and publication time are included</p>  
+   <details>
+     <summary>Additional details in the header. This part always shows</summary>
+     <p>This part can be hidden by the user</p>
+   </details>
+</header>
+
+<main>
+<p>There can <mark>only be one</mark> main section.  The main section should not include repeated elements such as sidebars.</p>
+
+<!-- Very few browsers support dialog -->
+<dialog open>What on earth is this</dialog>
+
+<!-- Support for meters seems decent, but no IE support: http://www.w3schools.com/tags/tag_meter.asp -->
+<p>Meter bar: <meter value="2" min="0" max="10">2 out of 10</meter></p>
+<p>Meter bar: <meter value="0.6">60%</meter></p>
+<p>Progress bar: <progress value="22" max="100"></progress></p>
+
+<section>
+
+<h1>I'm a Section</h1>
+<p>A section is a thematic grouping of content, typically with a heading.</p>
+<article> 
+   <h1>I'm an Article</h1> 
+   <p>An article should specify independent, self-contained content.</p>
+</article>
+<article> 
+   <h1>Second article in the section</h1> 
+   <p>Some text in the article</p>
+   <p>And some more text</p>
+</article>
+<aside>
+   <h2>This is an aside</h2>
+   <p>And some text in the aside</p>
+</aside>
+
+</section>
+</main>
+
+
+<footer>
+<p>I am the footer of the document.  A section or article can also have a footer.</p>
+</footer>
+</body>
+</html>

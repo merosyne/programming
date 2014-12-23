@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <meta charset="utf-8">
+   <!-- 
+      - supports importing mustache templates
+   -->
+   
+   <title>Test Handlebars JS</title>
+   
+<script src="../js/handlebars-v1.3.0.js"></script>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.3/jquery.min.js"></script>
+ 
+ <!-- The Template -->
+<!-- The entities will be HTML escaped.  To suppress this, use {{{ ... }}} -->
+<script id="entry-template" type="text/x-handlebars-template">
+  <div class="entry">
+  <h2>{{title}}</h2>
+  <div class="body">
+    {{! This is a comment }}
+    {{!-- This is also a comment --}}
+    {{body}}
+  </div>
+</div>
+</script>
+
+<!-- Testing Simple Template -->
+<script>
+// Clever way to get large templates.
+var source   = $("#entry-template").html();
+// You can precompile your templates.
+var template = Handlebars.compile(source);
+
+var context = {title: "Testing Simple Template", body: "simple template body"};
+var html = template(context);
+
+$( function() {
+   $("#divout").append(html);
+});
+</script>
+
+<!-- Test Simple Helper -->
+<script>
+// Helpers receive the current context as 'this'.
+// To reference context directly rather than return HTML based on the template, use this.<item>, eg this.title
+Handlebars.registerHelper('testh',function(options) {
+   // The returned string is not escaped.
+   return new Handlebars.SafeString("<em>" + this.title + " ... " + options.fn(this) + "</em>");
+});
+
+// Don't actually need to get this from a script tag.
+// Simple paths can be used for nested classes in the context, eg: path.part2
+var sourceb = "<h2>{{title}} {{path.part2}}</h2>{{#testh}} ==> {{body}}{{/testh}}";
+var templateb = Handlebars.compile(sourceb);
+var contextb = {title: "Testing Block Helpers", path: {part2: "... Title Part 2"}, body: "block helper"};
+var htmlb = templateb(contextb);
+$( function() { $("#divout").append(htmlb);});
+
+</script>
+
+<!-- Test block with context -->
+<script>
+Handlebars.registerHelper('block2',function(context, options) {
+   return "output: " + options.fn(context);
+});
+
+// Don't actually need to get this from a script tag.
+// Within a block context, you can reference the parent context, eg: ../body
+var sourceb2 = "<h1>Test Block2</h1>{{#block2 items}}{{part1}} {{part2}} {{../body}}{{/block2}}";
+var templateb2 = Handlebars.compile(sourceb2);
+var contextb2 = {body: "block helper", items: {part1: "part1", part2: "part2"} };
+var htmlb2 = templateb2(contextb2);
+$( function() { $("#divout").append(htmlb2);});
+
+</script>
+
+<!-- Test block with loop -->
+<script>
+Handlebars.registerHelper('block_with_loop',function(context, options) {
+  var ret = "";
+
+   for(var i=0; i<context.length; i++) {
+      ret = ret + options.fn(context[i]);
+   }
+   return ret;
+});
+
+// Don't actually need to get this from a script tag.
+var sourcebl = "<h2>Test Block with Loop</h2><ul>{{#block_with_loop items}}<li>{{body}}</li>{{/block_with_loop}}</ul>";
+var templatebl = Handlebars.compile(sourcebl);
+var contextbl = {body: "block helper", items: [ {body: "xxx"}, {body: "yyy"} ] };
+var htmlbl = templatebl(contextbl);
+$( function() { $("#divout").append(htmlbl);});
+
+</script>
+
+<!--
+
+Builtin Helpers:
+ - with: assign a new (nested) context to the enclosed block:
+   {{#with author}}
+      <h2>By {{firstName}} {{lastName}}</h2>
+   {{/with}}
+   
+also see: each, if, unless, log
+</head>
+<body>
+<h1>Test</h1>
+
+<div id="divout">
+</div>
+
+</body>
+</html>

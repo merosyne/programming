@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <meta charset="utf-8">
+   <title>Video</title>
+   
+   <style type="text/css">
+      div#videodiv {
+         position: absolute;
+         top: 100px;
+         left: 50px;
+      }
+      
+      div#videodiv video {
+         background-color: black;   
+      }
+      
+      /* Second test: processing incoming video */
+      div#videocanvas {
+         position: absolute;
+         top: 500px;
+         left: 50px;
+      }
+      
+      div#videocanvas video {
+         background-color: black;
+      }
+      
+      /* Positioned absolutely WRT the videocanvas div.*/
+      div#videocanvas canvas {
+         position: absolute;
+         top: 0px;
+         left: 0px;
+      }
+   </style>
+   
+   <!-- Streaming Video 
+      
+      This file uses "progressive video": ie retrieved via HTTP, and decoded/played as it is being retrieved.
+      
+      Streaming video is delivered using a protocol that is highly tuned to delivering video in an optimal way.
+      - Apple's HTTP Live Streaming
+      - Microsoft Smooth Streaming
+      - Adobe HTTP Dynamic Streaming
+      
+   -->
+   
+   <!--
+     Google chrome may not allow doing some video+canvas operations if loaded from a file.
+   -->
+   
+   <!-- Video object properties:
+      videoWidth
+      videoHeight
+      currentTime
+      duration
+      ended
+      error
+      loop // modifiable: true or false
+      muted // modifiable: true or false
+      paused
+      readyState
+      seeking
+      volume // modifiable: 0 to 1
+      
+      Video object methods:
+         play
+         pause
+         load
+         canPlayType
+         
+      Video object events:
+         play
+         pause
+         progress
+         error
+         abort
+         waiting
+         loadeddata
+         loadedmetadata
+         timeupdate
+         volumechange
+         ended
+   -->
+   
+   <script>
+   var video_counter = 0;
+   var video;
+   var videop;
+   
+   window.onload = function() {
+      video = document.getElementById("video");
+      console.log("Video wxh: " + video.width + "x" + video.height);
+      
+      // Support for all event properties on the video object may be incomplete, so use addEventListener instead of:
+      //    video.onplay = doSomething;
+      video.addEventListener("play",recordPlay,false);
+      video.addEventListener("ended",playAgain,false);
+      video.addEventListener("error",errorHandler,false);
+      
+      videop = document.getElementById("video_processed");
+      console.log("Videop wxh: " + videop.width + "x" + videop.height);
+      videop.addEventListener("play",processFrame,false);
+      videop.play();
+   }
+   
+   // Chrome did not catch the "bad URL" video error, but IE did.
+   // MEDIA_ERR_ABORTED = 1
+   // MEDIA_ERR_NETWORK = 2
+   // MEDIA_ERR_DECODE = 3
+   // MEDIA_ERR_SRC_NOT_SUPPORTED = 4
+   function errorHandler() {
+      if (video.error) {
+         
+         //video.poster = "images/technicaldifficulties.jpg";
+         alert("Video error: " + video.error.code);
+      }
+   }
+   
+   function processFrame() {
+      if (videop.paused || videop.ended) {
+         return;
+      }    
+      var buffer_canvas = document.getElementById("videop_buffer");
+      var display_canvas = document.getElementById("videop_display");
+      var buffer = buffer_canvas.getContext("2d");
+      var display = display_canvas.getContext("2d");
+      
+      // With the source being the video, drawImage gets one frame of the video as image data.
+      buffer.drawImage(videop,0,0,buffer_canvas.width,buffer_canvas.height);
+      var frame = buffer.getImageData(0,0,buffer_canvas.width,buffer_canvas.height);
+      
+      //console.log("Entire frame data size: " + frame.data.length);
+      var length = frame.data.length / 4;
+      //console.log("Number of pixels: " + length);
+      
+      for (var i = 0; i < length; i++) {
+         var r = frame.data[i * 4 + 0];
+         var g = frame.data[i * 4 + 1];
+         var b = frame.data[i * 4 + 2];
+         
+         // Calculation from "Head First HTML5"
+         var brightness = (3*r + 4*g + b) >>> 3;
+         
+         frame.data[i * 4 + 0] = brightness;
+         frame.data[i * 4 + 1] = brightness;
+         frame.data[i * 4 + 2] = brightness;
+      }
+      
+      display.putImageData(frame,0,0);
+      // Run again as soon as possible.  This could be faster than the framerate, but there is no current way
+      // to tie this to the actual video frame rate.
+      setTimeout(processFrame,0);
+   }
+   
+   function recordPlay() {
+      video_counter++;
+      alert("video has started: " + video_counter + " times");
+   }
+    
+   function playAgain() {
+      // If a video has played through, to play it again you have to reload it
+      if (video_counter < 2) {
+         video.load();
+         video.play();
+      }
+   }
+   // Dynamic selection of correct video type for browser.
+   function getFormatExtension(video) {
+   
+      // Returns "probably", "maybe", or ""
+      if (video.canPlayType("video/mp4") != "") {
+         return ".mp4";
+      } else if (video.canPlayType("video/webm") != "") {
+         return ".webm";
+      } else if (video.canPlayType("video/ogg") != "") {
+         return ".ogv";
+      }
+   }
+   
+   </script>
+</head>
+<body>
+
+<!--
+   Container formats: 
+      .mp4 (Safari, IE9+, Chrome): Normally H.264 video encoding (licensed by MPEG-LA), AAC audio encoding
+        - There are various types of codecs used for H.264, called "profiles", generally for different uses eg. varied bandwidth
+      .ogv (Firefox or Opera): Normally Theora video encoding (an open source codec), Vorbis audio encoding
+        - This is called an "ogg" file.
+      .webm (Google designed format: Chrome, Firefox, Opera): Normally Vp8 video encoding, Vorbis audio encoding
+-->
+
+<div id="videodiv">
+   <!-- Also: loop -->
+   
+   <!-- Style 1: source attribute 
+   <video 
+      controls 
+      autoplay 
+      src="video/demovideo1.mp4" 
+      width="480" height="360"
+      poster="images/prerollposter.jpg" 
+      id="video">
+   </video>
+   -->
+   
+   <!-- The listed source files are tried in order.  Videos are tested for playability by reading their metadata, unless you supply a type/codec.
+        codec can be omitted if you don't know it.
+   -->
+   <video 
+         controls 
+         width="480" 
+         height="360"
+         poster="images/prerollposter.jpg" 
+         id="video">
+      <source src="video/demovideo1.mp4" type='video/mp4; codecs="avc1.42E01E, mp4a.40.2"'>
+      <source src="video/demovideo1.webm" type='video/webm; codecs="vp8, vorbis"'>
+      <source src="video/demovideo1.ogv" type='video/ogg; codecs-"theora, vorbis"'>
+      <p> Your browser does not support the video element </p>
+      <object> ... fallback for older browsers ... </object>
+   </video>
+   
+</div>
+
+<!-- video is overlaid with one "scratch" canvas on which processing is done, and one final viewable canvas -->
+<div id="videocanvas">
+   <video 
+         controls 
+         width="480" 
+         height="360"
+         poster="images/prerollposter.jpg" 
+         id="video_processed">
+      <source src="video/demovideo1.mp4" type='video/mp4; codecs="avc1.42E01E, mp4a.40.2"'>
+      <source src="video/demovideo1.webm" type='video/webm; codecs="vp8, vorbis"'>
+      <source src="video/demovideo1.ogv" type='video/ogg; codecs-"theora, vorbis"'>
+      <p> Your browser does not support the video element </p>
+   </video>
+   <canvas id="videop_buffer" width="480" height="360"></canvas>
+   <canvas id="videop_display" width="480" height="360"> </canvas>
+</div>
+
+</body>
+</html>

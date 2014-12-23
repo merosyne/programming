@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <meta charset="utf-8">   
+   <title>Web Storage</title>
+
+   <!--
+      Web Storage is supported as far back as IE8
+      5MB of local storage allocated to all pages from the same domain.
+      
+      For instructions on viewing the contents of local storage see:
+      http://wickedlysmart.com/hfhtml5/devtools.html
+      
+      Generally limited to name=value pairs, use JSON to store objects.
+      
+   -->
+   
+   <script>
+      window.onload = function() {
+         var c = document.getElementById("content_div");
+   
+         // To clear everything:
+         //localStorage.clear();
+         
+         // To clear one thing:
+         //localStorage.removeItem("wstest_key");
+         
+         if (window["localStorage"]) {   
+            var cur_val_str = localStorage.getItem("wstest_key");
+            
+            // Or parseFloat for floating point numbers.
+            var cur_val_num = parseInt(localStorage.getItem("wstest_another_key"));
+            if (isNaN(cur_val_num)) {
+               cur_val_num = 0;
+            }
+            var x = localStorage.getItem("wstest_as_array");
+            
+            var p = document.createElement("p");
+            var storage_arr_json = localStorage["wstest_arr"];
+            var storage_arr;
+            var storage_arr_vals = "";
+            
+            if (!storage_arr_json) {
+               p.innerHTML += "<strong>Creating new storage array</strong><br>";
+               storage_arr = [];
+               // push is actually faster than storage_arr[storage_arr.length] = "something"
+               
+               storage_arr.push("str1");
+               storage_arr.push("str2");
+               localStorage["wstest_arr"] = JSON.stringify(storage_arr);
+               
+            } else {
+               storage_arr = JSON.parse(storage_arr_json);
+               p.innerHTML += "<strong>Reading existing storage array</strong><br>";
+               // Oddly, this was retrieving items one char at a time from the 2 strings when I wasn't using JSON.
+               for (var index in storage_arr) {
+                  storage_arr_vals += storage_arr[index] + ","
+               }
+            }
+                  
+            p.innerHTML += "<br>Stored string (wstest_key, string): " + cur_val_str;
+            p.innerHTML += "<br>Stored integer, retrieved via parseInt (wstest_another_key): " + cur_val_num;
+            p.innerHTML += "<br>Stored string, retrieved using array access rather than getItem: " + x;
+            
+            // Order of items is not defined.
+            p.innerHTML += "<br><br>There are currently " + localStorage.length + " items in storage.";
+            p.innerHTML += "<br>The first item (order not guaranteed) is: " + localStorage.key(0) + " => " + localStorage[localStorage.key(0)];
+            
+            p.innerHTML += "<br><br>Contents of stored array (<strong>why is this being retrieved char by char?)</strong>: " + storage_arr_vals;
+            
+            // Example loop
+            for (var key in localStorage) {
+               var value = localStorage[key];
+            }
+            
+            c.appendChild(p);
+         
+            localStorage.setItem("wstest_key","A value");
+            localStorage.setItem("wstest_another_key",cur_val_num+1);
+            localStorage["wstest_as_array"] = "yet another value";
+            
+            p.innerHTML += "<br><br>Retrieving item after setItem (item is modified): " + localStorage["wstest_another_key"];
+         }
+      }
+   </script>
+
+</head>
+<body>
+   <div id="content_div">
+   </div>
+</body>
+</html>

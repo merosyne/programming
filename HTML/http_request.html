@@ -15,6 +15,16 @@
   XMLHttpRequest level 2 is the latest.  The 'onload' property is not supported by older browsers (IE8, Opera 10)
   
   Cannot access data from other domains.
+  
+  JSONP:
+  - JSONP is not affected by the same-origin policy since <script> tags may access javascript from other domains.
+  - In the JSONP usage pattern, the URL request pointed to by the <script>'s src attribute returns JSON data, with 
+    a function call wrapped around it. In this way, a function that's already defined in the JavaScript environment 
+    can manipulate the JSON data
+    
+    <script type="application/javascript"
+        src="http://server2.example.com/Users/1234?jsonp=name_of_callback_function">
+    </script>
 -->
 
 <script>
@@ -76,6 +86,8 @@ function format_data( data, noparse ) {
 
 function handle_refresh(url) {
    var url = "http://localhost/test/http_request_data_callback.json";
+   
+   // Script element injection
    var new_script = document.createElement("script");
    new_script.setAttribute("src",url);
    new_script.setAttribute("id","jsonp");

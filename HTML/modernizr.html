@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="utf-8">
+   <title>Modernizr</title>
+<script src="../js/modernizr.custom.58606.js"></script>
+<!--
+polyfill (n): a JavaScript shim that replicates the standard API for older browsers
+
+Loading polyfills based on capabilities:
+Modernizr.load({
+  test: Modernizr.geolocation,
+  yep : 'geo.js',
+  nope: 'geo-polyfill.js'
+});
+
+Also see more complicated example here: http://modernizr.com/docs/#installing
+
+HTML 5 shiv:
+- Modernizr runs through a little loop in JavaScript to enable the various elements from HTML5 (as well as abbr) 
+  for styling in Internet Explorer.
+- As of Modernizr 1.5, this script is identical to what is used in the popular html5shim/html5shiv library
+-->
+<script>
+   
+   window.onload = function() {
+      if (Modernizr.geolocation) {
+         console.log("Geolocation supported");
+      }
+      if (Modernizr.localstorage) {
+         console.log("web storage supported");
+      }
+   }
+</script>
+   
+</head>
+<body>
+<div id="out">
+</div>
+</body>
+</html>

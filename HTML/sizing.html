@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <meta charset="utf-8">
+   <title>Sizing</title>
+<script>
+   window.onload = function() {
+   
+      var d2 = document.getElementById("divtest2");
+      console.log("Read width of div from preset css style: " + d2.style.width);
+      
+      // Not available in IE8: in IE8 see element.getCurrentStyle
+      console.log("Computed width: " + window.getComputedStyle(d2).getPropertyValue("width"));
+      
+      var d1 = document.getElementById("divtest1");   
+      // Does not return a value.
+      console.log("Read width of div from css, no preset: " + d1.style.width);
+      // Does return a value.
+      console.log("Same div, with getComputedStyle: " + window.getComputedStyle(d1).getPropertyValue("width"));
+      
+      var timg = document.getElementById("testimage");
+      console.log("Width of test image with no specified dimensions: " + timg.width);
+      
+      // Not available in IE8 or earlier
+      console.log("Size of window: " + window.innerWidth + ", " + window.innerHeight);
+   }
+</script>
+
+</head>
+<body>
+<!-- Sizing tests -->
+
+<div id="divtest1">Div 1<div>
+<div id="divtest2" style="width: 200px";>Div 2</div>
+
+<br><br>
+<img id="testimage" src="images/prerollposter.jpg">
+
+</body>
+</html>

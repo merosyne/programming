@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <!--
+      ISO-8859-1 - Latin alphabet part 1
+      UTF-8 - Unicode standard.  Backwards compatible with ASCII.
+   -->
+   <meta charset="utf-8">
+   <!-- 
+      This is equivalent to the longer:
+         <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+         
+      See: https://code.google.com/p/doctype-mirror/wiki/MetaCharsetAttribute
+   -->
+   
+   <title>CSS</title>
+</head>
+
+<style type="text/css">
+
+.t1 {
+   border: 1px solid red;
+   
+   // Requires border-collapse: separate
+   // Padding between the border of the table and the cells, not between cells.
+   //padding: 5px 10px;
+   
+   // Are the borders collapsed into a single border?  This causes padding here to be ignored, but
+   // padding in the td/tr style still works.
+   //border-collapse: collapse
+   
+   // border-spacing only works for border-collapse: separate, and pads around all cells as well as
+   // around the exterior of the table.  Ie. works like cellspacing.
+   border-collapse:separate;
+   border-spacing: 10px;
+}
+// No border shows up for tr
+.t1 tr {
+}
+.t1  th, td {
+   border: 1px solid red;
+   padding: 5px 10px;
+}
+
+</style>
+
+<body>
+<h1>CSS Tables</h1>
+
+<table class="t1">
+
+<tr>
+<td>Biology</td>
+<td>Ants</td>
+<td>Yet another line of text</td>
+<td>Computer Techniques</td>
+<td>Africa</td>
+</tr>
+
+<tr>
+<td>Biology</td>
+<td>Ants</td>
+<td>Yet another line of text</td>
+<td>Computer Techniques</td>
+<td>Africa</td>
+</tr>
+
+</table>
+</body>
+</html>

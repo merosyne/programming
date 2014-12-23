@@ -8,6 +8,19 @@
 <script src="js_dom_functions.js"></script>
 <link rel="stylesheet" href="assert.css">
 
+<!--
+   Attributes are defined by HTML.  Properties are defined by the DOM.
+   Many have a 1:1 mapping.  Some do not:
+   - value attribute == initial value, value property == current value.
+   
+   Accessing attributes:
+   - HTMLElement defines properties that correspond to all standard attributes.
+   - Quirksmode recommends:
+     - Use javascript property rather than setAttribute to access attributes where possible.  Should be available for all standard attributes.
+     - If this fails, use get/setAttribute()
+     - For extreme cases: http://quirksmode.org/dom/core/#attributes
+-->
+
 <script>
 window.onload = function() {
 

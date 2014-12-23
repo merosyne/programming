@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="utf-8">
+   <title>Web Workers</title>
+<script>
+window.onload = function() {
+   var status = document.getElementById("status");
+   if (window["Worker"]) {
+      status.innerHTML = "Web workers supported";
+   } else {
+      status.innerHTML = "No web workers";
+   }
+   
+   //===
+   // worker 1
+   //====
+   
+   // You can create multiple workers from the same JS file.
+   var worker = new Worker("webworkers.js");
+   
+   console.log("Send a message to web worker 1");
+   // Send a message.
+   // Messages are passed by copy.
+   // You cannot pass a function to a worker, since a worker cannot have access to the DOM.
+   worker.postMessage("The sent message");
+   
+   // Define a callback for receiving the response.
+   // - Its rather confusing that there are 2 onmessage handlers: one within the worker code
+   //   and one assigned to the worker object.
+   worker.onmessage = function(event) {
+      var message = "-> " + event.data;
+      document.getElementById("output").innerHTML = message;
+      var worker_that_sent_the_message = event.target;
+      
+      // You can also call close() inside the worker.
+      // The worker script will abort as soon as you call terminate(), even if still running.
+      worker_that_sent_the_message.terminate();
+   }
+   worker.onerror = function(error) {
+      var errstr = "Error in: " + error.filename + ", at line " + error.lineno + ": " + error.message;
+      // put the errstr somewhere...
+   }
+   
+   //===
+   // Worker 2
+   //===
+   
+   // You can send/receive objects as messages
+   var worker2 = new Worker("webworkers2.js");
+   var msg = {
+      name_str: "My task name",
+      other: "another field"
+   };
+   console.log("send a message to web worker 2");
+   worker2.postMessage(msg);
+   worker2.onmessage = function(event) {
+      var reply = event.data;
+      document.getElementById("output").innerHTML += "<br>" + reply.return_str;
+   }
+}
+</script>
+<script src="webworkers.js"></script>
+</head>
+<body>
+<!--
+   Not supported in IE9
+   
+   A worker can itself create workers.
+   
+   See importScripts to import javascript files into your web workers:
+      importScripts("http://myscript.js","http://another.js");
+      
+   This can be used for JSONP:
+   
+   // This is all defined in the worker file.
+   function make_request() {
+      importScripts("http://...?callback=handle_request");
+   }
+   // The JSON results will be passed as the response parameter. 
+   function handle_request(response) {
+      postMessage(response);
+   }
+   make_request();
+   
+   Workers can use XMLHttpRequest and local storage.
+-->
+<div id="status">
+</div>
+<div id="output">
+</div>
+</body>
+</html>
